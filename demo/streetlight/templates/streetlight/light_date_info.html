@@ -1,0 +1,122 @@
+{% extends "streetlight/light_info.html" %}
+
+{% block detailed_info %}
+
+<hr>
+<br>
+<table class="table is-borderless">
+    <tr>
+        <td>
+            <strong><h3 class="title is-3">Light switch data for {{ date_string }}</h3></strong>
+            <table class="table" cellspacing="5" cellpadding="5" border="1">
+                <tr>
+                    <th></th>
+                    <th>Expected time</th>
+                    <th>Real time</th>
+                    <th>early</th>
+                    <th>late</th>
+                    <th>inaccurate</th>
+                </tr>
+                <tr>
+                    <th>Switch off</th>
+                    <td align="center">{{ expected_switch_off }}</td>
+                    <td align="center">{{ streetlight.switch.switch_off }}</td>
+                    <td align="center">{{ streetlight.switch.off_too_early }}</td>
+                    <td align="center">{{ streetlight.switch.off_too_late }}</td>
+                    <td align="center">{{ streetlight.switch.inacc_off }}</td>
+                </tr>
+                <tr>
+                    <th>Switch on</th>
+                    <td align="center">{{ expected_switch_on }}</td>
+                    <td align="center">{{ streetlight.switch.switch_on }}</td>
+                    <td align="center">{{ streetlight.switch.on_too_early }}</td>
+                    <td align="center">{{ streetlight.switch.on_too_late }}</td>
+                    <td align="center">{{ streetlight.switch.inacc_on }}</td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <table class="table is-borderless">
+                <tr>
+                    <td align="left">
+                        <h4 class="title is-5" id="day_warnings">Warning flags</h5>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left">
+                        <table class="table" cellspacing="5" cellpadding="5" border="1">
+                            <tr>
+                                <th align="center">Not connected</th>
+                                <th align="center">Missing at least one</th>
+                                <th align="center">Missing at least half</th>
+                                <th align="center">Wrong switch off time</th>
+                                <th align="center">Wrong switch on time</th>
+                            </tr>
+                            <tr>
+                                {% if no_db_warnings %}
+                                    <td align="center" colspan="5">No warnings</td>
+                                {% else %}
+                                    <td align="center">{% if db_warnings.not_connected %}X{% endif %}</td>
+                                    <td align="center">{% if db_warnings.missing_data_one %}X{% endif %}</td>
+                                    <td align="center">{% if db_warnings.missing_data_half %}X{% endif %}</td>
+                                    <td align="center">{% if db_warnings.wrong_switch_off_time %}X{% endif %}</td>
+                                    <td align="center">{% if db_warnings.wrong_switch_on_time %}X{% endif %}</td>
+                                {% endif %}
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<strong><h3 class="title is-3">Electricity data for {{ date_string }}</h3></strong>
+<table class="table" cellspacing="5" cellpadding="5" border="1">
+    <tr>
+        {% for column in data_header %}
+        <th align="center">{{ column }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for entry in streetlight.data.entries %}
+    <tr>
+        <td align="center">{{ entry.time }}</td>
+        {% for attribute in entry.attributes %}
+            <td align="center">
+                {% if attribute.is_actual >= 0.75 %}
+                    <font color="black">{{ attribute.value }}</font>
+                {% elif attribute.is_actual >= 0.4 %}
+                    <font color="darkgrey">{{ attribute.value }}</font>
+                {% else %}
+                    <font color="lightgray">{{ attribute.value }}</font>
+                {% endif %}
+            </td>
+        {% endfor %}
+        <td align="center">{{ entry.lights }}</td>
+        <td align="center">
+        {% if entry.energy.is_actual >= 0.75 %}
+            <font color="black">{{ entry.energy.value }}</font>
+        {% elif entry.energy.is_actual >= 0.4 %}
+            <font color="darkgrey">{{ entry.energy.value }}</font>
+        {% else %}
+            <font color="lightgray">{{ entry.energy.value }}</font>
+        {% endif %}
+        </td>
+        <td align="center" style="white-space:pre-wrap; word-wrap:break-word">{{ entry.problems }}</td>
+        <td align="center" style="white-space:pre-wrap; word-wrap:break-word">{{ entry.details }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script type="text/babel">
+    renderEnergyGraph(
+        "energyGraph",
+        [
+            {% for graphentry in graphdata %} {x: {{ graphentry.x }}, y: {{ graphentry.y }}, color: {{ graphentry.color }}},
+            {% endfor %}
+        ]
+    );
+</script>
+
+{% endblock detailed_info %}

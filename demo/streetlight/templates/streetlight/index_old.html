@@ -1,0 +1,41 @@
+{% extends "streetlight/base.html" %}
+
+{% block content %}
+
+{% if error %}
+    {{ error }}
+{% else %}
+    <h2>Streetlight control areas</h2>
+    <table cellspacing="5" cellpadding="5" border="1">
+        <tr>
+            <th>Name</th>
+            <th>Identifier</th>
+            <th>Address</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Information</th>
+        </tr>
+
+        {% for area in areas %}
+            <tr>
+                {% url "streetlight:area_info" area_id=area.id as area_url %}
+                <td><a href="{{ area_url }}">{{ area.public_name }}</a></td>
+                <td>{{ area.name }}</td>
+                <td>{{ area.address }}</td>
+                <td>{{ area.latitude }}</td>
+                <td>{{ area.longitude }}</td>
+                {% if area.service_type == "tampere" %}
+                    <td>{{ area.count }} streetlight groups</td>
+                {% else %}
+                    <td>{{ area.count }} streetlights</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+<br>
+{% url "streetlight:logout_user" as logout_url %}
+<a href="{{ logout_url }}">Log out</a>
+
+{% endblock content %}

@@ -1,0 +1,41 @@
+{% extends "streetlight/area_info.html" %}
+
+{% block detailed_info %}
+
+<table class="table" cellspacing="5" cellpadding="5" border="1">
+    <tr>
+        <th></th>
+        <th colspan=2 align="center">Switch off time</th>
+        <th colspan=2 align="center">Switch on time</th>
+        <th align="center">Energy consumption</th>
+        <th align="center">Show on map</th>
+    </tr>
+    <tr>
+        <th>Expected times</th>
+        <td colspan=2 align="center">{{ expected_switch_off }}</td>
+        <td colspan=2 align="center">{{ expected_switch_on }}</td>
+        <td></td>
+    </tr>
+    {% for light in lights %}
+        {% url "streetlight:light_date_info" area_id=area_id light_id=light.id date_string=date_string as light_date_url %}
+        <tr>
+            <td><a href="{{ light_date_url }}">{{ light.name }}</a></td>
+            <td align="center">{{ light.info.switch_off }}</td>
+            <td align="center">{{ light.info.switch_off_info }}</td>
+            <td align="center">{{ light.info.switch_on }}</td>
+            <td align="center">{{ light.info.switch_on_info }}</td>
+            <td align="center">{{ light.day_energy_str }}</td>
+            <td align="center">
+                <button class="button is-small" onclick='createClickAtCoordinates({{ light.latitude }}, {{ light.longitude }}, "popup-content", getAreaMarkerHtml)'>
+                    <span class="icon is-small">
+                        <span class="fas fa-bullseye">
+                            <a href="#map"></a>
+                        </span>
+                    </span>
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock detailed_info %}

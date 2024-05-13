@@ -1,0 +1,47 @@
+# Copyright 2019 Tampere University
+# This software was developed as a part of the CityIoT project: https://www.cityiot.fi/english
+# This source code is licensed under the 3-clause BSD license. See license.txt in the repository root directory.
+# Author(s): Ville Heikkilä <ville.heikkila@tuni.fi>
+
+version: "3.5"
+
+services:
+  streetlight_db:
+    env_file:
+      - ./demo/env/postgres.env
+      - ./demo/env/secrets/postgres.env
+    image: postgres:9.6.13
+    container_name: ${POSTGRES_SERVICE}
+    restart: always
+    expose:
+      - ${POSTGRES_PORT}
+    volumes:
+      - streetlight_demo_volume:/var/lib/postgresql/data/
+    networks:
+      - streetlight_demo_network
+
+  streetlight_web:
+    build: ./demo
+    image: streetlight_demo:1.2
+    container_name: ${DJANGO_SERVICE}
+    restart: always
+    ports:
+      - ${DJANGO_PORT}:8000
+    depends_on:
+      - streetlight_db
+    command: ["./wait-for-it/wait-for-it.sh", "${POSTGRES_SERVICE}:${POSTGRES_PORT}", "--", "./start_demo.sh"]
+    volumes:
+      - streetlight_demo_volume:/code
+    networks:
+      - streetlight_demo_network
+
+volumes:
+  streetlight_demo_volume:
+    external: true
+    name: streetlight_demo
+
+networks:
+  streetlight_demo_network:
+    external: true
+    driver: bridge
+    name: streetlight_demo

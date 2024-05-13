@@ -1,0 +1,13 @@
+<form action="{{ target_url }}" method="POST">
+
+    {% csrf_token %}
+
+    <input type="hidden" name="area_id" value="{{ area_id }}">
+    <input type="hidden" name="light_id" value="{{ light_id }}">
+    {% if light_id %}
+        <input type="submit" value="Show latest values">
+    {% else %}
+        <input type="submit" value="Show area details">
+    {% endif %}
+
+</form>

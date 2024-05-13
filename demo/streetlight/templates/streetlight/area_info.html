@@ -1,0 +1,180 @@
+{% extends "streetlight/base_with_js.html" %}
+
+{% block content %}
+
+{% if error %}
+    {{ error }}
+    <br>
+    {% url "streetlight:index" as index_url %}
+    <a href="{{ index_url }}">Index page</a>
+
+{% else %}
+    <h2 class="title">{{ public_name }} ({{ name }})</h2>
+    <table class="table" cellspacing="25" cellpadding="5" border="0" style="width: 100%">
+        <tr>
+            <td>
+                <table class="table" cellspacing="5" cellpadding="5" border="1">
+                    <tr>
+                        <th colspan=2 align="center">
+                            {% if service_type == "tampere" %}
+                                {{ count }} streetlight groups
+                            {% else %}
+                                {{ count }} streetlights
+                            {% endif %}
+                        </th>
+                    </tr>
+                    {% if date_string %}
+                        <tr>
+                            <th>Energy consumption<br>on {{ date_string }}</th>
+                            <td>{{ area_day_energy_str }}</td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <th colspan=2 align="center">Control cabinet</th>
+                    </tr>
+                    <tr>
+                        <th>Address</th>
+                        <td>
+                            {% for location in area_locations %}{{ location.address }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Latitude</th>
+                        <td>
+                            {% for location in area_locations %}{{ location.latitude }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Longitude</th>
+                        <td>
+                            {% for location in area_locations %}{{ location.longitude }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <div class="map" id="map" style="width: 100%; min-width: 700px; height: 700px; min-height: 400px}">
+                    <div id="popup" class="ol-popup" style="min-width: 300px">
+                        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                        <div id="popup-content" style="width: 100%"></div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="center">
+                <table class="table" cellspacing="15" cellpadding="5">
+                    {% url "streetlight:fetch_info" as fetch_info_url %}
+                    <tr>
+                        <td>
+                            {% include "streetlight/info_selector.html" with target_url=fetch_info_url area_id=area_id %}
+                        </td>
+                        <td>
+                            {% include "streetlight/datepicker.html" with target_url=fetch_info_url area_id=area_id light_id="all" start_date=date_string %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {% url "streetlight:index" as index_url %}
+    <a href="{{ index_url }}">Index page</a>
+    <br>
+
+    <hr>
+    {% if service_type == "tampere" %}
+        <h3 class="title">Streetlight groups in the area</h3>
+    {% else %}
+        <h3 class="title">Individual streetlights in the area</h3>
+    {% endif %}
+
+    {% load static %}
+    <script type="text/javascript">
+        var map = setSeparateMapMarkers(
+            "map",
+            {% if service_type == "tampere" %}12,
+            {% else %}15,
+            {% endif %}
+            {{ map_center_latitude }},
+            {{ map_center_longitude }},
+            [
+                {% for location in area_locations %}
+                {
+                    "name": '{{ public_name }}',
+                    "latitude": {{ location.latitude }},
+                    "longitude": {{ location.longitude }},
+                    "color": 'icon.{% static "streetlight/map_marker_black.png" %}',
+                    "size": 0.25,
+                    "link": '',
+                    "address": '{{ location.address }}',
+                    "timestamp": '{{ timestamp }}'
+                },
+                {% endfor %}
+                {% for light in lights %}
+                {% if date_string %}
+                    {% url "streetlight:light_date_info" area_id=area_id light_id=light.id date_string=date_string as light_url %}
+                {% else %}
+                    {% url "streetlight:light_info" area_id=area_id light_id=light.id as light_url %}
+                {% endif %}
+                {
+                    "name": '{{ light.name }}',
+                    "latitude": {{ light.latitude }},
+                    "longitude": {{ light.longitude }},
+                    "color": {% if light.marker.error %}'icon.{% static "streetlight/map_marker_red.png" %}',
+                             {% elif light.marker.warning %}'icon.{% static "streetlight/map_marker_yellow.png" %}',
+                             {% else %}'icon.{% static "streetlight/map_marker_green.png" %}',
+                             {% endif %}
+                    "size": 0.15,
+                    "link": '{{ light_url }}',
+                    "address": '{{ light.address }}',
+                    "timestamp": '{{ light.timestamp }}'
+                },
+                {% endfor %}
+            ],
+            true
+        );
+        map = addPopupToMap("popup", "popup-content", "popup-closer", getAreaMarkerHtml);
+    </script>
+
+    {% block detailed_info %}
+
+    <table class="table sortable" cellspacing="5" cellpadding="5" border="1">
+        <tr>
+            <th align="center">Identifier</th>
+            <th align="center">Address</th>
+            <th align="center">Latitude</th>
+            <th align="center">Longitude</th>
+            <th align="center">Latest update time</th>
+            <th align="center">Show on map</th>
+        </tr>
+        {% for light in lights %}
+            <tr>
+                {% if date_string %}{% url "streetlight:light_date_info" area_id=area_id light_id=light.id date_string=date_string as light_url %}
+                {% else %}{% url "streetlight:light_info" area_id=light.area light_id=light.id as light_url %}
+                {% endif %}
+                <td><a href="{{ light_url }}">{{ light.name }}</a></td>
+                <td>{{ light.address }}</td>
+                <td>{{ light.latitude }}</td>
+                <td>{{ light.longitude }}</td>
+                <td align="center">{{ light.timestamp }}</td>
+                <td align="center">
+                    <button class="button is-small" onclick='createClickAtCoordinates({{ light.latitude }}, {{ light.longitude }}, "popup-content", getAreaMarkerHtml)'>
+                        <span class="icon is-small">
+                            <span class="fas fa-bullseye">
+                                <a href="#map"></a>
+                            </span>
+                        </span>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% endblock detailed_info %}
+{% endif %}
+
+{% endblock content %}

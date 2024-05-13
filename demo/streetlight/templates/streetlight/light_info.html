@@ -1,0 +1,139 @@
+{% extends "streetlight/base_with_js.html" %}
+
+{% block content %}
+
+{% if error %}
+    {{ error }}
+    <br>
+    {% url "streetlight:index" as index_url %}
+    <a href="{{ index_url }}">Index page</a>
+
+{% else %}
+    {% if service_type == "tampere" %}
+        <h2 class="title is-2">Streetlight group {{ name }}</h2>
+    {% else %}
+        <h2 class="title is-2">Streetlight {{ name }}</h2>
+    {% endif %}
+
+    <table class="table is-borderless">
+        <tr>
+            <td>
+                <table class="table" cellspacing="25" cellpadding="5" border="0">
+                    <tr>
+                        <td>
+                            <table class="table" cellspacing="5" cellpadding="5" border="1">
+                                <tr>
+                                    <th>Control area</th>
+                                    <td>{{ area_public_name }} ({{ area_name }})</td>
+                                </tr>
+                                <tr>
+                                    <th>Address</th>
+                                    <td>{{ address }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Latitude</th>
+                                    <td>{{ latitude }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Longitude</th>
+                                    <td>{{ longitude }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <div class="map" id="map" style="width: 50%; min-width: 300px; max-width: 800px; height: 250px;"></div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td rowspan=2>
+                <div id="energyGraph"></div>
+                {% if streetlight.data.day_energy.value_str %}
+                    <h4 class="title is-4" id="day_energy">
+                        Total energy consumption: <strong>{{ streetlight.data.day_energy.value_str }}</strong>
+                        {% comment %} ({{ streetlight.data.day_energy.estimated_hours }}/24 hours estimated) {% endcomment %}
+                    </h4>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <table class="table" cellspacing="15" cellpadding="5">
+                {% url "streetlight:fetch_info" as fetch_info_url %}
+                <tr>
+                    <td>
+                        {% include "streetlight/info_selector.html" with target_url=fetch_info_url area_id=area_id light_id=light_id %}
+                    </td>
+                    <td>
+                        {% include "streetlight/datepicker.html" with target_url=fetch_info_url area_id=area_id light_id=light_id start_date=date_string %}
+                    </td>
+                </tr>
+            </table>
+        </tr>
+    </table>
+
+    {% if area_id %}
+        {% if streetlight.data.entries %}
+            {% url "streetlight:all_light_date_info" area_id=area_id date_string=date_string as area_url %}
+            <a href="{{ area_url }}">{{ area_public_name }} ({{ area_name }}) for {{ date_string }}</a>
+        {% else %}
+            {% url "streetlight:area_info" area_id=area_id as area_url %}
+            <a href="{{ area_url }}">{{ area_public_name }} ({{ area_name }})</a>
+        {% endif %}
+    {% else %}
+        {% url "streetlight:index" as index_url %}
+        <a href="{{ index_url }}">Index page</a>
+    {% endif %}
+    <br>
+
+    {% load static %}
+    <script type="text/javascript">
+        var map = setSeparateMapMarkers(
+            "map",
+            14,
+            {{ latitude }},
+            {{ longitude }},
+            [
+                {
+                    "latitude": {{ latitude }},
+                    "longitude": {{ longitude }},
+                    "color": 'icon.{% static "streetlight/map_marker_red.png" %}',
+                    "size": 0.25
+                }
+            ],
+            true
+        );
+        //var map = setMapMarker(
+        //    "map", 14,
+        //    {
+        //        "color": 'icon.{% static "streetlight/map_marker_red.png" %}',
+        //        "size": 0.25,
+        //        "latitude": {{ latitude }},
+        //        "longitude": {{ longitude }}
+        //    }
+        //);
+    </script>
+
+    {% block detailed_info %}
+
+    <hr>
+    <strong><h3 class="title is-3">Latest attribute values</h3></strong>
+    <table class="table" cellspacing="5" cellpadding="5" border="1">
+        <tr>
+            <th align="center">attribute</th>
+            <th align="center">value</th>
+            <th align="center">timestamp</th>
+        </tr>
+
+        {% for attribute in attributes %}
+            <tr>
+                <td>{{ attribute.name }}</td>
+                <td align="center">{{ attribute.value }}</td>
+                <td align="center">{{ attribute.timestamp }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    {% endblock detailed_info %}
+{% endif %}
+
+{% endblock content %}

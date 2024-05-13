@@ -1,0 +1,13 @@
+<form action="{{ target_url }}" method="POST">
+
+    {% csrf_token %}
+
+    <input type="hidden" name="area_id" value="{{ area_id }}">
+    <input type="hidden" name="light_id" value="{{ light_id }}">
+
+    Choose date:
+    <input type="date" name="date_string" min="2017-01-01" max="2022-12-31" value="{{ start_date }}">
+
+    <input type="submit" value="Show data">
+
+</form>

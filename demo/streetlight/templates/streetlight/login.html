@@ -1,0 +1,15 @@
+{% extends "streetlight/base.html" %}
+
+{% block content %}
+
+<form action="{% url "streetlight:login_user" %}" method="POST">
+
+    {% csrf_token %}
+
+    Username: <input type="text" name="username"><br>
+    Password: <input type="password" name="password"><br>
+    <input type="submit" value="Submit credentials">
+
+</form>
+
+{% endblock content %}

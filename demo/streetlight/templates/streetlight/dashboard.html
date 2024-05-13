@@ -1,0 +1,171 @@
+{% extends "streetlight/base_with_js.html" %}
+
+{% block content %}
+
+{% if error %}
+    {{ error }}
+{% else %}
+    <div class="tile is-ancestor">
+        <div class="tile is-2 is-vertical is-parent box">
+            {% for area in areas %}
+            {% url "streetlight:all_light_date_info" area_id=area.id date_string=date_string as area_url %}
+            <div class="tile is-child box">
+                <div class="content">
+                    <a class="button is-medium is-link is-fullwidth" href="{{ area_url }}">{{ area.public_name }}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tile is-vertical box">
+            <table class="table is-borderless">
+                <tbody>
+                    <tr>
+                        <td align="center"><h1 class="title">Data from day {{ date }}</h1></td>
+                        <td align="center">
+                            {% url "streetlight:fetch_info" as fetch_info_url %}
+                            {% include "streetlight/datepicker.html" with target_url=fetch_info_url start_date=date_string %}
+                        </td>
+                        <td aligh="right">
+                            {% url "streetlight:logout_user" as logout_url %}
+                            <a href="{{ logout_url }}">Log out</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="tile box">
+                <div class="map" id="map" style="width: 100%; min-width: 600px; height: 500px;}">
+                    <div id="popup" class="ol-popup" style="min-width: 200px">
+                        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                        <div id="popup-content" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tile is-parent box">
+                <div class="tile is-child box">
+                    <div class="content">
+                        <table class="table is-borderless">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="title">
+                                        Connected streetlights
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Online</th>
+                                    <th>Offline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><font size="+2">{{ connected_streetlight_groups }}</font> groups</td>
+                                    <td><font size="+2">{{ not_connected_streetlight_groups }}</font> groups</td>
+                                </tr>
+                                <tr>
+                                    <td><font size="+2">{{ connected_streetlights }}</font> lights</td>
+                                    <td><font size="+2">{{ not_connected_streetlights }}</font> lights</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tile is-child box">
+                    <div class="content">
+                        <table class="table is-borderless">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="title">
+                                        Energy Consumption
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="2">
+                                        <font size="+3">{{ day_energy.total }}</font>
+                                    </td>
+                                    <td>
+                                        <font size="+2">{{ day_energy.tampere }}</font>
+                                        <br>
+                                        <font>Old system</font>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <font size="+2">{{ day_energy.viinikka }}</font>
+                                        <br>
+                                        <font>Viinikka</font>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tile is-child box">
+                    <div class="content">
+                        <table class="table is-borderless">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="title">
+                                        Warnings
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="2">
+                                        <font size="+3">{{ warnings_total }}</font>
+                                    </td>
+                                    <td>
+                                        <font size="+2">{{ warnings_groups }}</font>
+                                        <br>
+                                        <font>Old system</font>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <font size="+2">{{ warnings_streetlights }}</font>
+                                        <br>
+                                        <font>Viinikka</font>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% load static %}
+    <script type="text/javascript">
+        var map = setSeparateMapMarkers(
+            "map",
+            11,
+            61.514723,
+            23.750286,
+            [
+                {% for area in areas %}
+                {% url "streetlight:all_light_date_info" area_id=area.id date_string=date_string as area_url %}
+                {
+                    "name": '{{ area.public_name }}',
+                    "latitude": {{ area.marker_latitude }},
+                    "longitude": {{ area.marker_longitude }},
+                    "color": 'icon./streetlight/static/streetlight/{{ area.icon }}',
+                    "size": 0.6,
+                    "link": '{{ area_url }}',
+                    "address": '{{ area.address }}',
+                    "service_type": '{{ area.service_type }}',
+                    "total": {{ area.count }},
+                    "warningValue": {{ area.warningValue}},
+                    "errorValue": {{ area.errorValue }}
+                },
+                {% endfor %}
+            ],
+            false
+        );
+        map = addPopupToMap("popup", "popup-content", "popup-closer", getDashboardMarkerHtml);
+    </script>
+
+{% endif %}
+
+{% endblock content %}

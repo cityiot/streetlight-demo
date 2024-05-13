@@ -1,0 +1,11 @@
+https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.1.1/build/ol.js openlayers/v6.1.1 ol.js
+https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.1.1/build/ol.js.map openlayers/v6.1.1 ol.js.map
+https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.1.1/css/ol.css openlayers/v6.1.1 ol.css
+https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.15.0/babel.min.js babel/v6.15.0 babel.min.js
+https://unpkg.com/react@16.11.0/umd/react.production.min.js react/v16.11.0 react.production.min.js
+https://unpkg.com/react-dom@16.11.0/umd/react-dom.production.min.js react/v16.11.0 react-dom.production.min.js
+https://unpkg.com/react-vis@1.11.7/dist/style.css react-vis/v1.11.7 style.css
+https://unpkg.com/react-vis@1.11.7/dist/dist.min.js react-vis/v1.11.7 dist.min.js
+https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css bulma/v0.8.0 bulma.min.css
+https://use.fontawesome.com/releases/v5.11.2/js/all.js fontawesome/v5.11.2 all.js
+https://kryogenix.org/code/browser/sorttable/sorttable.js sorttable/v2 sorttable.js

@@ -1,0 +1,5 @@
+*__pycache__*
+test_output/*
+*test*.txt
+db.sqlite3
+demo/env/secrets/*

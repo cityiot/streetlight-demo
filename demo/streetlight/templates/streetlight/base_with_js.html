@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Streetlight demo</title>
+
+        {% load static %}
+        <link href='{% static "bulma/v0.8.0/bulma.min.css" %}' rel="stylesheet"/>
+
+        <script type="text/javascript" src='{% static "fontawesome/v5.11.2/all.js" %}'></script>
+
+        <link href='{% static "openlayers/v6.1.1/ol.css" %}' rel="stylesheet"/>
+        <script src='{% static "openlayers/v6.1.1/ol.js" %}'></script>
+
+        <link href='{% static "react-vis/v1.11.7/style.css" %}' rel="stylesheet"/>
+        <script src='{% static "react/v16.11.0/react.production.min.js" %}'></script>
+        <script src='{% static "react/v16.11.0/react-dom.production.min.js" %}'></script>
+        <script src='{% static "babel/v6.15.0/babel.min.js" %}'></script>
+        <script type="text/javascript" src='{% static "react-vis/v1.11.7/dist.min.js" %}'></script>
+
+        <script type="text/javascript" src='{% static "sorttable/v2/sorttable.js" %}'></script>
+
+        <link href='{% static "streetlight/map_test.css" %}' rel="stylesheet"/>
+        <script src='{% static "streetlight/map_test.js" %}'></script>
+        <script type="text/babel" src='{% static "streetlight/react_test.js" %}'></script>
+    </head>
+    <body>
+        {% block content %}
+        {% endblock content %}
+    </body>
+</html>
