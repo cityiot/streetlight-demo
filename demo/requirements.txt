@@ -1,4 +1,4 @@
 astral==1.10.1
-Django==3.2.25
+Django==4.2.16
 psycopg2==2.8.2
 requests==2.32.0
